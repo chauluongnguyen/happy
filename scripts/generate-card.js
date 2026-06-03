@@ -4,6 +4,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const qrcode = require("qrcode");
 const sharp = require("sharp");
+const { PDFDocument } = require("pdf-lib");
 
 const url = process.argv[2];
 if (!url) {
@@ -320,11 +321,25 @@ async function main() {
     .toBuffer();
   await fs.writeFile(path.join(outDir, "card-combined.png"), combined);
 
+  console.log("→ Xuất PDF đúng kích thước thẻ (mỗi mặt 1 trang)…");
+  // 1mm = 72/25.4 pt; lấy kích thước từ pixel/DPI để không sai tỉ lệ
+  const pageW = (W / DPI) * 72;
+  const pageH = (H / DPI) * 72;
+  const pdf = await PDFDocument.create();
+  for (const buf of [frontPng, backPng]) {
+    const img = await pdf.embedPng(buf);
+    const page = pdf.addPage([pageW, pageH]);
+    page.drawImage(img, { x: 0, y: 0, width: pageW, height: pageH });
+  }
+  const pdfBytes = await pdf.save();
+  await fs.writeFile(path.join(outDir, "card.pdf"), pdfBytes);
+
   console.log("");
   console.log(`✅ Đã xuất thiệp chuẩn thẻ ID-1 (54 × 85.6 mm, ${DPI} DPI) vào card-output/`);
   console.log("   • card-front.png      — IG-style post với ảnh hai bạn");
   console.log("   • card-back.png       — I ❤ You + QR trong tim");
   console.log("   • card-combined.png   — 2 mặt cạnh nhau, tiện in cùng 1 tờ");
+  console.log("   • card.pdf            — PDF 2 trang (mặt trước/sau) đúng 54×85.6mm, gửi nhà in");
   console.log("");
   console.log("QR trỏ về: " + url);
 }
