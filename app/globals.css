@@ -11,8 +11,11 @@ body {
   min-height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-  color: #2b1530;
-  background: linear-gradient(135deg, #ffd6e8 0%, #ffe9f1 40%, #fff5fa 100%);
+  color: #0c2c40;
+  background: linear-gradient(135deg, #bfe8fb 0%, #ddf3fc 40%, #f1fbff 100%);
+  background-attachment: fixed;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
 button {

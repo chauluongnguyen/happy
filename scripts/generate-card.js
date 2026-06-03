@@ -15,13 +15,15 @@ if (!url) {
 }
 
 require("dotenv").config?.({ path: path.join(process.cwd(), ".env.local") });
-const RECIPIENT = process.env.RECIPIENT_NAME || "Bảo Châu";
-const SENDER = process.env.SENDER_NAME || "love";
+const RECIPIENT = "Hiếu Phạm" || "love";
+const SENDER = "Bảo Châu" || "love";
 const PHOTO_PATH = process.env.PHOTO_PATH || path.join(process.cwd(), "hinhanh.jpg");
 
-// Credit-card portrait at ~600dpi: 54mm × 85.6mm
-const W = 1276;
-const H = 2022;
+// Thẻ chuẩn ID-1 (giống thẻ ngân hàng): 85.6 × 53.98 mm, dạng dọc.
+// In ở 600 DPI → 53.98mm = 1275px, 85.6mm = 2022px.
+const DPI = 600;
+const W = 1276; // ≈ 54.0 mm @ 600dpi
+const H = 2022; // ≈ 85.6 mm @ 600dpi
 
 // IG-style photo box on front
 const PHOTO_X = 60;
@@ -128,7 +130,7 @@ function makeFrontSvg() {
   <text x="${avX + avR + 26}" y="${avY + 14}" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
         font-size="40" font-weight="700" fill="#262626">baochau.love</text>
   <text x="${avX + avR + 26}" y="${avY + 56}" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
-        font-size="28" fill="#8e8e8e">${escapeXml(new Date().toLocaleDateString("vi-VN"))} · Sài Gòn</text>
+        font-size="28" fill="#8e8e8e">18/06/2026 · Thành Phố Hồ Chí Minh</text>
 
   <!-- 3-dot menu -->
   <g fill="#262626">
@@ -148,14 +150,14 @@ function makeFrontSvg() {
 
   <!-- likes line -->
   <text x="80" y="${actionY + 95}" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
-        font-size="34" font-weight="700" fill="#262626">đã được Trung Hiếu và 999 người khác thích</text>
+        font-size="34" font-weight="700" fill="#262626">đã được Hiếu Phạm và 999 người khác thích</text>
 
   <!-- caption -->
   <text x="80" y="${captionY + 90}" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
         font-size="42" font-weight="700" fill="#262626">${caption}</text>
 
   <text x="80" y="${captionY + 150}" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
-        font-size="30" fill="#8e8e8e">Xem tất cả 1 bình luận · happy birthday em yêu ✿</text>
+        font-size="30" fill="#8e8e8e">Xem tất cả 1 bình luận · happy birthday anh ✿</text>
 </svg>`;
 }
 
@@ -285,15 +287,17 @@ async function main() {
   const frontPng = photoLayer
     ? await sharp(frontBg)
         .composite([{ input: photoLayer, left: PHOTO_X, top: PHOTO_Y }])
+        .withMetadata({ density: DPI })
         .png()
         .toBuffer()
-    : frontBg;
+    : await sharp(frontBg).withMetadata({ density: DPI }).png().toBuffer();
   await fs.writeFile(path.join(outDir, "card-front.png"), frontPng);
 
   console.log("→ Render mặt sau (I ❤ You + QR)…");
   const backSvg = makeBackSvg(qrUri);
   await fs.writeFile(path.join(outDir, "card-back.svg"), backSvg);
   const backPng = await sharp(Buffer.from(backSvg))
+    .withMetadata({ density: DPI })
     .png()
     .toBuffer();
   await fs.writeFile(path.join(outDir, "card-back.png"), backPng);
@@ -311,12 +315,13 @@ async function main() {
       { input: frontPng, left: 0, top: 0 },
       { input: backPng, left: W + 40, top: 0 },
     ])
+    .withMetadata({ density: DPI })
     .png()
     .toBuffer();
   await fs.writeFile(path.join(outDir, "card-combined.png"), combined);
 
   console.log("");
-  console.log("✅ Đã xuất thiệp credit-card portrait (54×85mm) vào card-output/");
+  console.log(`✅ Đã xuất thiệp chuẩn thẻ ID-1 (54 × 85.6 mm, ${DPI} DPI) vào card-output/`);
   console.log("   • card-front.png      — IG-style post với ảnh hai bạn");
   console.log("   • card-back.png       — I ❤ You + QR trong tim");
   console.log("   • card-combined.png   — 2 mặt cạnh nhau, tiện in cùng 1 tờ");

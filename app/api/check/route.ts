@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const submitted =
     body && typeof body.password === "string" ? body.password : "";
 
-  const expected = process.env.BIRTHDAY_PASSWORD ?? "20231225";
+  const expected = "03052026";
 
   const ok = normalize(submitted) === normalize(expected);
 
@@ -18,6 +18,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    name: process.env.RECIPIENT_NAME ?? "Bảo Châu",
+    name: "Hiếu Phạm",
   });
 }

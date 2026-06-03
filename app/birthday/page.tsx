@@ -12,20 +12,20 @@ export default function BirthdayPage() {
   const [name, setName] = useState("");
   const [unlocked, setUnlocked] = useState(false);
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!password.trim()) return;
+  async function submit(value: string) {
+    if (!value) return;
     setStatus("loading");
 
     try {
       const res = await fetch("/api/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: value }),
       });
 
       if (!res.ok) {
         setStatus("error");
+        setPassword("");
         return;
       }
 
@@ -34,11 +34,29 @@ export default function BirthdayPage() {
       setUnlocked(true);
     } catch {
       setStatus("error");
+      setPassword("");
     }
   }
 
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submit(password);
+  }
+
+  function press(digit: string) {
+    if (status === "loading") return;
+    if (status === "error") setStatus("idle");
+    setPassword((prev) => (prev.length >= 12 ? prev : prev + digit));
+  }
+
+  function backspace() {
+    if (status === "loading") return;
+    if (status === "error") setStatus("idle");
+    setPassword((prev) => prev.slice(0, -1));
+  }
+
   if (unlocked) {
-    return <Celebration name={name || "Bảo Châu"} />;
+    return <Celebration name={name || "Hiếu Phạm"} />;
   }
 
   return (
@@ -61,20 +79,49 @@ export default function BirthdayPage() {
         <p className="lead">Nhập mật khẩu để mở quà:</p>
 
         <form onSubmit={onSubmit}>
-          <input
-            type="password"
-            inputMode="text"
-            autoComplete="off"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (status === "error") setStatus("idle");
-            }}
-            aria-label="Mật khẩu"
-          />
+          <div className="dots" aria-label="Mật khẩu đã nhập">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <span
+                key={i}
+                className={`dot ${i < password.length ? "filled" : ""}`}
+              />
+            ))}
+          </div>
 
-          <button type="submit" disabled={status === "loading"}>
+          <div className="keypad">
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+              <button
+                key={d}
+                type="button"
+                className="key"
+                onClick={() => press(d)}
+              >
+                {d}
+              </button>
+            ))}
+            <span className="key key-empty" aria-hidden />
+            <button
+              key="0"
+              type="button"
+              className="key"
+              onClick={() => press("0")}
+            >
+              0
+            </button>
+            <button
+              type="button"
+              className="key key-back"
+              onClick={backspace}
+              aria-label="Xoá"
+            >
+              ⌫
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={status === "loading" || password.length === 0}
+          >
             {status === "loading" ? "Đang mở…" : "Nhận quà"}
           </button>
         </form>
@@ -99,9 +146,10 @@ export default function BirthdayPage() {
       <style jsx>{`
         .gate {
           min-height: 100vh;
+          min-height: 100dvh;
           display: grid;
           place-items: center;
-          padding: 24px;
+          padding: 20px 16px;
         }
         .card {
           width: min(420px, 100%);
@@ -110,8 +158,8 @@ export default function BirthdayPage() {
           border-radius: 24px;
           padding: 36px 28px 28px;
           text-align: center;
-          box-shadow: 0 30px 60px -30px rgba(176, 38, 90, 0.35),
-            0 6px 16px -6px rgba(176, 38, 90, 0.18);
+          box-shadow: 0 30px 60px -30px rgba(14, 107, 168, 0.35),
+            0 6px 16px -6px rgba(14, 107, 168, 0.18);
           border: 1px solid rgba(255, 255, 255, 0.7);
         }
         .gift {
@@ -124,37 +172,79 @@ export default function BirthdayPage() {
         h1 {
           font-size: 22px;
           margin: 8px 0 4px;
-          color: #b0265a;
+          color: #0e6ba8;
         }
         .lead {
           margin: 0 0 18px;
-          color: #6b3a55;
+          color: #2b5a72;
         }
         form {
           display: grid;
-          gap: 10px;
+          gap: 18px;
         }
-        input {
-          width: 100%;
-          padding: 14px 16px;
-          border-radius: 12px;
-          border: 1.5px solid #ffc8de;
-          background: #fff8fb;
-          font-size: 17px;
-          letter-spacing: 0.18em;
-          text-align: center;
-          outline: none;
-          transition: border-color 0.15s, box-shadow 0.15s;
+        .dots {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          padding: 4px 0 2px;
         }
-        input:focus {
-          border-color: #ff6fa5;
-          box-shadow: 0 0 0 4px rgba(255, 111, 165, 0.18);
+        .dot {
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          background: transparent;
+          border: 2px solid #aaddf2;
+          transition: background 0.15s, border-color 0.15s, transform 0.15s;
+        }
+        .dot.filled {
+          background: #1b9bd8;
+          border-color: #1b9bd8;
+          transform: scale(1.12);
+        }
+        .keypad {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+          margin: 2px auto 0;
+          width: min(300px, 100%);
+        }
+        .key {
+          height: 64px;
+          border-radius: 999px;
+          border: 1.5px solid #cfeefb;
+          background: #f4fbff;
+          color: #0e6ba8;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: 0;
+          cursor: pointer;
+          display: grid;
+          place-items: center;
+          transition: transform 0.08s, background 0.15s, box-shadow 0.15s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .key:hover {
+          background: #e9f7fe;
+        }
+        .key:active {
+          transform: scale(0.94);
+          background: #d6effb;
+          box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.18);
+        }
+        .key-empty {
+          border: none;
+          background: transparent;
+          cursor: default;
+        }
+        .key-back {
+          color: #0a5b86;
+          font-size: 22px;
         }
         button {
           padding: 13px 18px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, #ff5a8a 0%, #ff80b5 100%);
+          background: linear-gradient(135deg, #0e88c8 0%, #38bdf8 100%);
           color: white;
           font-size: 16px;
           font-weight: 600;
@@ -174,13 +264,25 @@ export default function BirthdayPage() {
         }
         .err {
           margin: 12px 0 0;
-          color: #c0285a;
+          color: #d94f4f;
           font-weight: 500;
         }
         .hint {
           margin: 18px 0 0;
           font-size: 13px;
-          color: #a06480;
+          color: #5a8aa0;
+        }
+        @media (max-width: 380px) {
+          .card {
+            padding: 30px 18px 22px;
+          }
+          .keypad {
+            gap: 10px;
+          }
+          .key {
+            height: 58px;
+            font-size: 22px;
+          }
         }
       `}</style>
     </main>
