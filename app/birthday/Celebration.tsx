@@ -315,16 +315,6 @@ export default function Celebration({ name }: Props) {
           })}
         </svg>
 
-        <motion.p
-          className="celebrant"
-          style={{ color: "#006994", fontWeight: 900 }}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          {name}
-        </motion.p>
-
         {/* lời chúc bên trong trái tim */}
         <div className="content">
           <motion.div
@@ -334,6 +324,8 @@ export default function Celebration({ name }: Props) {
           >
             🎂
           </motion.div>
+
+          <p className="celebrant">{name}</p>
 
           <motion.p
             className="wish"
@@ -350,8 +342,9 @@ export default function Celebration({ name }: Props) {
         </div>
 
         <div className="byline" aria-label="Lời ký">
-          <span className="from">Bảo Châu 💙</span>
+          <span className="from">Happy Birthday 🎂 Hiếu Phạm 🎂🎂💙</span>
           <span className="date">18 · 06 · 2026</span>
+          <span className="from">Bảo Châu 💙</span>
         </div>
       </motion.div>
       </div>
@@ -379,23 +372,23 @@ export default function Celebration({ name }: Props) {
         .heart {
           position: relative;
           width: 100%;
-          padding-bottom: max(52px, calc(46px + env(safe-area-inset-bottom, 0px)));
-          filter: drop-shadow(0 26px 44px rgba(214, 51, 132, 0.28));
+          padding-bottom: max(72px, calc(58px + env(safe-area-inset-bottom, 0px)));
+          overflow: visible;
         }
         .byline {
           position: absolute;
           left: 50%;
-          bottom: 0;
+          bottom: max(6px, env(safe-area-inset-bottom, 0px));
           transform: translateX(-50%);
           z-index: 3;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 2px;
+          gap: 3px;
           text-align: center;
-          width: max-content;
-          max-width: 100%;
-          padding: 0 8px;
+          width: min(340px, 92vw);
+          max-width: 92vw;
+          padding: 0 10px;
           opacity: 1;
           animation: bylineIn 0.6s ease 1s both;
         }
@@ -412,8 +405,10 @@ export default function Celebration({ name }: Props) {
           inset: 0;
           width: 100%;
           height: 100%;
-          z-index: 0;
+          z-index: 1;
           overflow: visible;
+          filter: drop-shadow(0 26px 44px rgba(214, 51, 132, 0.28));
+          pointer-events: none;
         }
         .bead {
           filter: drop-shadow(0 0.08px 0.12px rgba(236, 72, 153, 0.5));
@@ -439,11 +434,11 @@ export default function Celebration({ name }: Props) {
         .content {
           position: absolute;
           left: 50%;
-          top: 50%;
+          top: 44%;
           transform: translate(-50%, -50%);
           transform-origin: center center;
-          width: 70%;
-          max-height: 54%;
+          width: 58%;
+          max-height: 46%;
           text-align: center;
           z-index: 2;
           overflow: hidden;
@@ -452,46 +447,62 @@ export default function Celebration({ name }: Props) {
           align-items: center;
         }
         .cake {
-          font-size: clamp(26px, 7vw, 38px);
+          font-size: clamp(22px, 6vw, 32px);
           line-height: 1;
-          margin-bottom: 4px;
+          margin-bottom: 0;
           display: inline-block;
           filter: drop-shadow(0 6px 10px rgba(14, 107, 168, 0.25));
         }
         .celebrant {
-          position: absolute;
-          left: 0;
-          right: 0;
-          top: 21%;
-          z-index: 3;
-          margin: 0;
-          padding: 0 8px;
-          font-size: clamp(48px, 15vw, 80px) !important;
-          line-height: 1;
-          font-weight: 900 !important;
+          position: static;
+          z-index: auto;
+          margin: 2px 0 4px;
+          padding: 0 4px;
+          font-size: clamp(22px, 6.2vw, 30px) !important;
+          line-height: 1.08;
+          font-weight: 800 !important;
           letter-spacing: 0.01em;
           color: #006994 !important;
           -webkit-text-fill-color: #006994 !important;
           display: block;
-          width: 90%;
+          width: 100%;
           max-width: 100%;
           text-align: center;
           text-shadow: 0 1px 0 rgba(255, 255, 255, 0.95);
           pointer-events: none;
+          opacity: 1;
+          animation: celebrantIn 0.6s ease 0.3s both;
+        }
+        @keyframes celebrantIn {
+          from {
+            opacity: 0;
+            transform: translate3d(0, -8px, 0);
+          }
+          to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
         }
         .wish {
           display: flex;
           flex-direction: column;
-          gap: 3px;
-          font-size: clamp(12px, 3.2vw, 15px);
+          gap: 2px;
+          font-size: clamp(11px, 2.9vw, 14px);
           color: #7a2348;
-          line-height: 1.32;
-          margin: 6px 0 0;
+          line-height: 1.28;
+          margin: 2px 0 0;
           font-weight: 500;
           width: 100%;
+          padding: 0 2px;
+          box-sizing: border-box;
         }
         .wline {
           display: block;
+        }
+        .wline:last-child {
+          font-size: 0.9em;
+          line-height: 1.25;
+          padding: 0 4px;
         }
         @media (max-width: 480px) {
           .stage {
@@ -504,29 +515,38 @@ export default function Celebration({ name }: Props) {
             margin: auto 0;
           }
           .heart {
-            padding-bottom: max(48px, calc(40px + env(safe-area-inset-bottom, 0px)));
+            padding-bottom: max(68px, calc(54px + env(safe-area-inset-bottom, 0px)));
           }
           .arc-title {
             font-size: 1.58px;
           }
           .content {
-            top: 51%;
-            width: 72%;
-            max-height: 52%;
+            top: 43%;
+            width: 56%;
+            max-height: 44%;
             transform: translate(-50%, -50%);
           }
           .celebrant {
-            top: 20%;
-            font-size: clamp(42px, 13vw, 66px) !important;
-            font-weight: 900 !important;
-            color: #006994 !important;
-            -webkit-text-fill-color: #006994 !important;
+            font-size: clamp(20px, 5.8vw, 28px) !important;
+            margin: 1px 0 3px;
           }
           .wish {
+            gap: 1px;
+            margin-top: 0;
+            font-size: clamp(10px, 2.7vw, 12px);
+            line-height: 1.24;
+          }
+          .wline:last-child {
+            font-size: 0.88em;
+            padding: 0 6px;
+          }
+          .byline {
+            width: min(320px, 94vw);
             gap: 2px;
-            margin-top: 4px;
-            font-size: clamp(10.5px, 2.9vw, 13px);
-            line-height: 1.28;
+          }
+          .from {
+            font-size: clamp(11px, 3vw, 14px);
+            line-height: 1.3;
           }
         }
         .from {
