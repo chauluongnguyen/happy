@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 
@@ -166,9 +166,14 @@ const GREETING_ARCS = buildGreetingArcPaths();
 
 export default function Celebration({ name }: Props) {
   const fired = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (fired.current) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || fired.current) return;
     fired.current = true;
 
     const duration = 4000;
@@ -207,7 +212,7 @@ export default function Celebration({ name }: Props) {
     }, 220);
 
     return () => window.clearInterval(id);
-  }, []);
+  }, [mounted]);
 
   return (
     <main className="stage">
@@ -215,7 +220,7 @@ export default function Celebration({ name }: Props) {
       <motion.div
         className="heart"
         style={{ aspectRatio: `${VIEWBOX_W} / ${VIEWBOX_H}` }}
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={false}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
@@ -286,8 +291,9 @@ export default function Celebration({ name }: Props) {
             </textPath>
           </text>
 
-          {/* các trái tim nhỏ chạy chầm chậm dọc viền */}
-          {Array.from({ length: HEART_COUNT }).map((_, i) => {
+          {/* các trái tim nhỏ chạy chầm chậm dọc viền — chỉ sau mount (tránh hydration) */}
+          {mounted &&
+            Array.from({ length: HEART_COUNT }).map((_, i) => {
             const size = [1.7, 2.1, 2.5][i % 3];
             const begin = `-${((ORBIT_SECONDS * i) / HEART_COUNT).toFixed(2)}s`;
             return (
@@ -327,18 +333,13 @@ export default function Celebration({ name }: Props) {
 
           <p className="celebrant">{name}</p>
 
-          <motion.p
-            className="wish"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
+          <p className="wish">
             {wishLines.map((line, i) => (
               <span key={i} className="wline">
                 {line}
               </span>
             ))}
-          </motion.p>
+          </p>
         </div>
 
         <div className="byline" aria-label="Lời ký">
@@ -495,6 +496,17 @@ export default function Celebration({ name }: Props) {
           width: 100%;
           padding: 0 2px;
           box-sizing: border-box;
+          animation: wishIn 0.6s ease 0.5s both;
+        }
+        @keyframes wishIn {
+          from {
+            opacity: 0;
+            transform: translate3d(0, 10px, 0);
+          }
+          to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+          }
         }
         .wline {
           display: block;

@@ -1,8 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Celebration from "./Celebration";
+
+const Celebration = dynamic(() => import("./Celebration"), { ssr: false });
 
 type Status = "idle" | "loading" | "error";
 
